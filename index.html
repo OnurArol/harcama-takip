@@ -7,10 +7,11 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Harcama Takip">
-<link rel="manifest" href="manifest.json?v=4">
-<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png?v=4">
-<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=4">
-<link rel="stylesheet" href="style.css?v=4">
+<link rel="manifest" href="manifest.json?v=6">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png?v=6">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=6">
+<link rel="stylesheet" href="style.css?v=6">
+<link rel="stylesheet" href="ios-fixes.css?v=6">
 <title>Harcama Takip</title>
 </head>
 <body>
@@ -22,6 +23,6 @@
 <section id="list" class="page"><div class="card"><div class="sectionHead"><div><h2>Harcama Kayıtları</h2><div id="listInfo" class="sub"></div></div></div><div class="filters"><div><label for="listMonth">Ay</label><input id="listMonth" type="month"></div><div><label for="filterCat">Kategori</label><select id="filterCat"><option value="">Tümü</option><option>Market</option><option>Yemek</option><option>Yakıt</option><option>Fatura</option><option>Ev</option><option>Çocuk</option><option>Sağlık</option><option>Giyim</option><option>Eğlence</option><option>İş</option><option>Diğer</option></select></div><div class="search"><label for="search">Açıklamada ara</label><input id="search" type="search" placeholder="Ara..."></div></div><div id="items" class="list"></div></div></section>
 <section id="settings" class="page"><div class="card"><h2>Uygulama Kilidi</h2><div class="settingText" style="margin-bottom:12px">İstersen uygulama açılırken 4–6 haneli PIN isteyebilir. PIN yalnızca bu cihazda saklanır.</div><div class="pinGrid"><div><label for="newPin">Yeni PIN</label><input id="newPin" inputmode="numeric" type="password" maxlength="6" placeholder="••••"></div><div><label for="newPin2">PIN tekrar</label><input id="newPin2" inputmode="numeric" type="password" maxlength="6" placeholder="••••"></div></div><div class="pinBtns"><button id="savePin" class="primary" type="button">PIN Kaydet</button><button id="removePin" class="soft" type="button">Kilidi Kapat</button></div><div id="pinMsg" class="sub" style="margin-top:9px"></div></div><div class="card"><h2>Veriler</h2><div class="settingRow"><div><div class="settingTitle">Yedek al</div><div class="settingText">Gelir ve harcamaları JSON olarak kaydeder.</div></div><button id="backup" class="soft" type="button">Yedek Al</button></div><div class="settingRow"><div><div class="settingTitle">CSV dışa aktar</div><div class="settingText">Gelir ve giderleri tek dosyada verir.</div></div><button id="csv" class="soft" type="button">CSV Al</button></div></div><div class="card"><h2>Gizlilik</h2><div class="settingText">Gelir ve harcama kayıtların GitHub'a gönderilmez. Bu iPhone'un yerel tarayıcı hafızasında tutulur. PIN ekranı görünürlüğü azaltır ancak verileri şifrelemez.</div></div><div class="card"><button id="clear" class="danger" style="width:100%" type="button">Tüm Finansal Verileri Sil</button></div></section></div>
 <nav class="nav" aria-label="Alt menü"><div class="navIn"><button class="on" data-p="home" type="button"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M3 11 12 3l9 8"/><path d="M5 10v10h14V10"/></svg>Özet</button><button data-p="add" type="button"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.3"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>Harcama</button><button data-p="balance" type="button"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M4 19V9M10 19V5M16 19v-7M22 19V3"/></svg>Bilanço</button><button data-p="list" type="button"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M8 6h13M8 12h13M8 18h13"/><circle cx="3.5" cy="6" r=".8" fill="currentColor" stroke="none"/><circle cx="3.5" cy="12" r=".8" fill="currentColor" stroke="none"/><circle cx="3.5" cy="18" r=".8" fill="currentColor" stroke="none"/></svg>Kayıtlar</button><button data-p="settings" type="button"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19 12a7 7 0 1 1-14 0 7 7 0 0 1 14 0Z"/></svg>Ayarlar</button></div></nav>
-<script src="app.js?v=4"></script>
+<script src="app.js?v=6"></script>
 </body>
 </html>
