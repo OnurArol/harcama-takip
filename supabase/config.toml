@@ -1,0 +1,4 @@
+# Authentication is checked inside the function with auth.getUser(token).
+# This supports new asymmetric JWT signing keys as well as publishable API keys.
+[functions.analyze-receipt]
+verify_jwt = false
