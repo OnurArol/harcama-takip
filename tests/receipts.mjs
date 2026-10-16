@@ -86,6 +86,6 @@ try{
  assert.deepEqual(errors,[]);
  await context.close();
  // No cloud config: original app remains fully usable and receipt setup is explicit.
- const plain=await browser.newContext({serviceWorkers:'block'});const pp=await plain.newPage();pp.on('pageerror',e=>errors.push(e.message));await pp.goto('http://127.0.0.1:8765');await pp.locator('[data-p="receipts"]').click();assert.equal(await pp.locator('#receiptSetup').isVisible(),true);await pp.locator('[data-p="add"]').click();assert.equal(await pp.locator('#f').isVisible(),true);assert.deepEqual(errors,[]);await plain.close();
+ const plain=await browser.newContext({serviceWorkers:'block'});await plain.route('**/receipt-config.js*',route=>route.fulfill({contentType:'application/javascript',body:'window.RECEIPT_CONFIG={supabaseUrl:"",supabasePublishableKey:""};'}));const pp=await plain.newPage();pp.on('pageerror',e=>errors.push(e.message));await pp.goto('http://127.0.0.1:8765');await pp.locator('[data-p="receipts"]').click();assert.equal(await pp.locator('#receiptSetup').isVisible(),true);await pp.locator('[data-p="add"]').click();assert.equal(await pp.locator('#f').isVisible(),true);assert.deepEqual(errors,[]);await plain.close();
  console.log('PASS: manual expense/income/payments, receipt upload/review/confirm/edit/view, duplicate prevention, OCR retry, XSS escaping, signout, unconfigured mode, mobile layouts, free local OCR, no paid API calls.');
 }finally{await browser.close();await new Promise(resolve=>server.close(resolve));}
