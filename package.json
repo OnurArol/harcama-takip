@@ -1,0 +1,14 @@
+{
+  "name": "harcama-takip",
+  "private": true,
+  "scripts": {
+    "test": "node tests/ocr.mjs && node tests/database.mjs && node tests/receipts.mjs"
+  },
+  "devDependencies": {
+    "@electric-sql/pglite": "0.5.8",
+    "playwright": "1.51.1"
+  },
+  "engines": {
+    "node": ">=22.6.0"
+  }
+}
