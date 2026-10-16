@@ -2,9 +2,9 @@
 
 Günlük harcama, gelir, bütçe ve ödeme hatırlatmaları için GitHub Pages uygulaması.
 
-Fişler bölümü fotoğrafı özel Supabase alanına yükler, sunucuda otomatik okur ve kullanıcı kontrolünden sonra harcama toplamlarına ekler. Mevcut elle girişler cihazda saklanmaya devam eder.
+Fişler bölümü orijinal fotoğrafı özel Supabase alanına yükler. Tesseract.js ile cihazda ücretsiz okur; kullanıcı kontrolünden sonra harcama toplamlarına ekler. Ücretli yapay zekâ API'si veya Edge Function gerekmez. Supabase Free depolama/trafik kotaları geçerlidir. Mevcut elle girişler cihazda saklanmaya devam eder.
 
-**Fiş özelliği önce kurulmalıdır:** [Fiş kurulumu](FIS_KURULUM.md).
+**Fiş özelliği önce kurulmalıdır:** [Ücretsiz fiş kurulumu](FIS_KURULUM.md).
 
 ## Testler
 
@@ -16,4 +16,4 @@ npx playwright install chromium
 npm test
 ```
 
-PostgreSQL testleri PGlite üzerinde SQL/RLS/özel dosya erişimini, arayüz testleri Playwright üzerinde mevcut ekranları ve simüle bulut yanıtlarıyla fiş akışını kontrol eder. Gerçek Supabase ve OpenAI uçtan uca kontrolü kurulumdan sonra yapılmalıdır.
+PostgreSQL/PGlite testleri SQL/RLS/özel dosya erişimini kontrol eder. Parser testleri Türkçe tutar/tarih, çelişkili toplam, KDV, para üstü, ürün ve kategorileri doğrular. Playwright testleri eski ekranları ve fiş akışını simüle bulut yanıtlarıyla ve üretimde kullanılan metin ayrıştırıcıyla kontrol eder. OCR motorundan dönen metin arayüz testinde simüle edilir. Gerçek Supabase uçtan uca kontrolü kurulumdan sonra yapılmalıdır.

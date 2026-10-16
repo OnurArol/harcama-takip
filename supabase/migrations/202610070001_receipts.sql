@@ -54,31 +54,6 @@ create policy receipts_files_update on storage.objects for update to authenticat
 create policy receipts_files_delete on storage.objects for delete to authenticated
  using (bucket_id='receipts' and (storage.foldername(name))[1]=(select auth.uid())::text);
 
--- Per-user daily cap and row lock prevent repeated clicks from starting parallel AI calls.
-create table if not exists public.receipt_analysis_usage (
- owner_id uuid not null references auth.users(id) on delete cascade,
- usage_date date not null, calls integer not null default 0,
- primary key(owner_id,usage_date)
-);
-alter table public.receipt_analysis_usage enable row level security;
-revoke all on public.receipt_analysis_usage from anon,authenticated;
-create or replace function public.begin_receipt_analysis(receipt_id uuid) returns uuid
- language plpgsql security definer set search_path='' as $$
-declare r public.receipts; t uuid:=gen_random_uuid(); n integer;
-begin
- select * into r from public.receipts where id=receipt_id and owner_id=auth.uid() for update;
- if not found then raise exception 'Fiş bulunamadı.'; end if;
- if r.status in ('confirmed','uploading') then raise exception 'Fiş bu durumda okunamaz.'; end if;
- if r.status='analyzing' and r.analysis_started_at>now()-interval '3 minutes' then raise exception 'Fiş zaten okunuyor.'; end if;
- insert into public.receipt_analysis_usage(owner_id,usage_date,calls) values(auth.uid(),(now() at time zone 'UTC')::date,1)
- on conflict(owner_id,usage_date) do update set calls=receipt_analysis_usage.calls+1 where receipt_analysis_usage.calls<50 returning calls into n;
- if n is null then raise exception 'Günlük 50 okuma sınırına ulaşıldı.'; end if;
- update public.receipts set status='analyzing',analysis_token=t,analysis_started_at=now() where id=receipt_id;
- return t;
-end; $$;
-revoke all on function public.begin_receipt_analysis(uuid) from public,anon;
-grant execute on function public.begin_receipt_analysis(uuid) to authenticated;
-
 create or replace function public.confirm_receipt(
  receipt_id uuid,merchant_value text,date_value date,amount_value numeric,
  category_value text,payment_value text,note_value text,products_value jsonb

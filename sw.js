@@ -1,5 +1,5 @@
-const C='harcama-v8';
-const A=['./','./index.html','./style.css','./ios-fixes.css','./payments.css','./receipts.css','./receipt-config.js','./receipts.js','./app.js','./payments.js','./manifest.json','./apple-touch-icon.png','./icon-192.png','./icon-512.png'];
+const C='harcama-v9';
+const A=['./','./index.html','./style.css','./ios-fixes.css','./payments.css','./receipts.css','./receipt-config.js','./receipts.js','./receipt-ocr.js','./app.js','./payments.js','./manifest.json','./apple-touch-icon.png','./icon-192.png','./icon-512.png'];
 self.addEventListener('install',e=>{self.skipWaiting();e.waitUntil(caches.open(C).then(c=>c.addAll(A)))});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==C).map(x=>caches.delete(x)))).then(()=>self.clients.claim()))});
 self.addEventListener('fetch',e=>{

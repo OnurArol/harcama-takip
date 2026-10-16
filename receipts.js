@@ -27,7 +27,7 @@ $('settings').insertAdjacentHTML('beforebegin', `
   <div class="receiptToolbar"><button id="receiptCamera" class="primary" type="button">Fotoğraf Çek</button><button id="receiptGallery" class="soft" type="button">Galeriden Seç</button></div>
   <input id="receiptCameraFile" type="file" accept="image/jpeg,image/png,image/webp" capture="environment" hidden>
   <input id="receiptGalleryFile" type="file" accept="image/jpeg,image/png,image/webp" hidden>
-  <p class="receiptConsent">Fotoğraf hesabına yüklenir ve otomatik okuma için yapay zekâ servisine gönderilir. JPEG, PNG veya WebP, en fazla 10 MB. Buluta kaydedildi mesajından sonra galerideki kopyayı tutman gerekmez.</p>
+  <p class="receiptConsent">Fotoğraf hesabına yüklenir. Ücretsiz otomatik okuma bu cihazda yapılır; ücretli okuma servisi kullanılmaz. JPEG, PNG veya WebP, en fazla 10 MB. Buluta kaydedildi mesajından sonra galerideki kopyayı tutman gerekmez.</p>
  </div>
  <div id="receiptEditor" class="card" hidden><h2>Fişi Kontrol Et</h2><img id="receiptPreview" class="receiptPreview" alt="Seçilen fiş fotoğrafı" hidden>
   <div class="receiptToolbar"><button id="receiptView" class="soft" type="button">Fişi Büyüt</button><button id="receiptAnalyze" class="soft" type="button">Yeniden Otomatik Oku</button></div>
@@ -94,12 +94,26 @@ async function upload(file){if(!user)throw new Error('Önce hesabına giriş yap
  check(await client.storage.from('receipts').upload(r.image_path,file,{contentType:file.type,upsert:true}));
  r=check(await client.from('receipts').update({status:'uploaded'}).eq('id',r.id).select().single());
  await refresh();await openReceipt(r.id);status('Fotoğraf buluta kaydedildi. Fiş okunuyor…');
- await analyze(r.id);
+ await analyze(r.id,file);
 }
-async function analyze(id){status('Fiş otomatik okunuyor…');const result=await client.functions.invoke('analyze-receipt',{body:{receiptId:id}});
- if(result.error){await refresh();throw new Error('Fotoğraf buluta kaydedildi; otomatik okuma tamamlanamadı. Yeniden Otomatik Oku ile deneyebilir veya bilgileri elle tamamlayabilirsin.');}
- if(result.data?.error)throw new Error(result.data.error);
- await refresh();await openReceipt(id);status('Okuma tamamlandı. Firma, tarih, toplam ve ürünleri kontrol edip kaydet.');
+async function analyze(id,original){
+ const r=rows.find(row=>row.id===id);if(!r||r.status==='confirmed')return;
+ if(r.status==='uploading')throw new Error('Önce fotoğrafın yüklemesini tamamla.');
+ const generation=authGeneration;
+ status('Fiş bu cihazda ücretsiz okunuyor…');
+ try{
+  const blob=original||check(await client.storage.from('receipts').download(r.image_path));
+  const values=await window.ReceiptOCR.read(blob,message=>status(message));
+  if(generation!==authGeneration)return;
+  let query=client.from('receipts').update({...values,status:'analyzed',analysis_token:null}).eq('id',id).eq('status',r.status);
+  if(r.updated_at)query=query.eq('updated_at',r.updated_at);
+  const result=await query.select().single();
+  if(result.error)throw new Error('Fiş başka bir ekranda değiştirilmiş olabilir. Fişleri Yenile ile kontrol et.');
+  await refresh();await openReceipt(id);status('Ücretsiz okuma tamamlandı. Firma, tarih, toplam ve ürünleri kontrol edip kaydet.');
+ }catch(error){
+  await refresh();
+  throw new Error('Fotoğraf buluta kaydedildi; otomatik okuma tamamlanamadı. Yeniden Otomatik Oku ile deneyebilir veya bilgileri elle tamamlayabilirsin. '+(error.message||''));
+ }
 }
 $('receiptHome').addEventListener('click',()=>document.querySelector('.nav button[data-p="receipts"]').click());
 document.querySelector('.nav button[data-p="receipts"]').addEventListener('click',()=>task(initialize));

@@ -25,13 +25,9 @@ await db.query(`insert into storage.objects(bucket_id,name) values('receipts',$1
 const confirm=()=>db.query(`select (public.confirm_receipt($1,'Migros','2026-10-07',1284.50,'Market','Kredi Kartı','Alışveriş',$2::jsonb)).*`,[id,JSON.stringify([{name:'Süt',quantity:2,total:85.50}])]);
 await assert.rejects(confirm,/Yükleme/);
 await db.query(`update public.receipts set status='uploaded' where id=$1`,[id]);
-const claim=await db.query(`select public.begin_receipt_analysis($1) as token`,[id]);assert.ok(claim.rows[0].token);
-await assert.rejects(()=>db.query(`select public.begin_receipt_analysis($1)`,[id]),/zaten okunuyor/);
-await assert.rejects(confirm,/Yükleme/);
 await db.query(`update public.receipts set status='analyzed',analysis_token=null where id=$1`,[id]);
 const confirmed=await confirm();assert.equal(confirmed.rows[0].status,'confirmed');assert.equal(Number(confirmed.rows[0].amount),1284.50);
 await confirm();assert.equal(Number((await db.query('select count(*) n from public.receipts')).rows[0].n),1);
-await assert.rejects(()=>db.query(`select public.begin_receipt_analysis($1)`,[id]),/durumda okunamaz/);
 await db.exec(`select set_config('request.jwt.claim.sub','${other}',false);`);
 assert.equal((await db.query('select * from public.receipts')).rows.length,0);
 assert.equal((await db.query('select * from storage.objects')).rows.length,0);
@@ -39,12 +35,8 @@ await assert.rejects(confirm,/bulunamadı/);
 assert.equal((await db.query(`delete from public.receipts where id=$1 returning id`,[id])).rows.length,0);
 await db.exec(`set role anon;`);
 await assert.rejects(()=>db.query('select * from public.receipts'),/permission denied/);
-await assert.rejects(()=>db.query(`select public.begin_receipt_analysis($1)`,[id]),/permission denied/);
 await db.exec('reset role;');
 await db.exec(migration); // Reapplying setup must preserve the receipt and its private bucket.
 assert.equal(Number((await db.query('select count(*) n from public.receipts')).rows[0].n),1);
 assert.equal((await db.query(`select public from storage.buckets where id='receipts'`)).rows[0].public,false);
-await db.exec(`update public.receipt_analysis_usage set calls=50;update public.receipts set status='uploaded';set role authenticated;select set_config('request.jwt.claim.sub','${owner}',false);`);
-await assert.rejects(()=>db.query(`select public.begin_receipt_analysis($1)`,[id]),/50 okuma/);
-assert.equal((await db.query(`select status from public.receipts where id=$1`,[id])).rows[0].status,'uploaded');
-await db.close();console.log('PASS: PostgreSQL migration, RLS isolation, private storage policies, duplicate constraint, confirmation validation, analysis lease, daily quota, anonymous denial, idempotent setup.');
+await db.close();console.log('PASS: PostgreSQL migration, RLS isolation, private storage policies, duplicate constraint, confirmation validation, anonymous denial, idempotent setup.');

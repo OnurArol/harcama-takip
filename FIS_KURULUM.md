@@ -1,26 +1,32 @@
-# Harcamalarım: fiş saklama ve otomatik okuma kurulumu
+# Harcamalarım: ücretsiz fiş okuma ve saklama
 
-Bu sürüm mevcut elle girişleri, gelirleri, PIN'i ve ödeme hatırlatmalarını korur. Fişler ayrı bir hesapta saklanır. Kurulum yapılana kadar fiş ekranı bağlantı uyarısı gösterir; fiş saklama ve otomatik okuma aktif değildir.
+Bu sürüm ücretli yapay zekâ veya okuma API'si kullanmaz. Fişi Tesseract.js ile cihazın tarayıcısında okur; fotoğraf ve kayıt bilgilerini Supabase'in ücretsiz planında saklar. Elle giriş, gelir, bütçe, PIN ve ödeme hatırlatmaları korunur.
 
-## 1. Supabase projesini aç
+Kurulum yapılana kadar Fişler ekranında bağlantı uyarısı görünür. Özellik henüz canlıda etkin değildir.
 
-1. https://supabase.com/dashboard adresini aç, GitHub hesabınla giriş yap.
-2. **New project** seç. Gerekirse önce bir organizasyon oluştur.
-3. Proje adını **Harcamalarım** yap. Güçlü bir veritabanı şifresi belirle ve şifre yöneticine kaydet.
-4. Avrupa bölgesini seç ve **Create new project** ile oluştur. Hazır olmasını bekle.
-5. Projenin **Connect** ekranından veya **Settings → API / API Keys** bölümünden **Project URL** ve **Publishable key** değerlerini al.
+## 1. Ücretsiz Supabase projesini aç
 
-Project URL genellikle `https://xxxx.supabase.co`, yeni herkese açık anahtar `sb_publishable_...` şeklindedir. Eski projelerde `anon` anahtarı da kullanılabilir. Veritabanı şifresini, **secret / service_role** anahtarını veya OpenAI anahtarını sohbete ya da GitHub'a koyma.
+1. https://supabase.com/dashboard adresine GitHub hesabınla giriş yap.
+2. Organizasyon oluşturman istenirse **Free ($0 / month)** planını seç. **Pro** seçmene gerek yok.
+3. **New project** ile adı **Harcamalarım** olan bir proje oluştur. Güçlü bir veritabanı şifresi belirle ve Avrupa bölgesini seç.
+4. Proje hazır olunca **Connect** ekranından veya **Settings → API / API Keys** bölümünden **Project URL** ve **Publishable key** değerlerini al.
+5. Ücretli yükseltme ekranı çıkarsa işlemi tamamlamadan Free organizasyonunda proje açtığını kontrol et. Zaten iki aktif ücretsiz projen varsa kullanılmayan bir projeyi duraklatman veya kaldırman gerekebilir; mevcut projeleri içeriğini kontrol etmeden silme.
+
+16 Ekim 2026 itibarıyla Free planı aylık $0; 1 GB dosya alanı, 500 MB veritabanı ve 5 GB dışa aktarım trafiği içerir. İki aktif ücretsiz proje sınırı vardır. Bir hafta kullanılmayan ücretsiz proje duraklatılabilir. Bu plan sınırsız depolama değildir. Kotalar için paneldeki Usage bölümünü takip et. [Resmi plan sınırları](https://supabase.com/pricing).
+
+Project URL `https://xxxx.supabase.co`, herkese açık anahtar `sb_publishable_...` şeklindedir. Eski projelerde `anon` anahtarı kullanılabilir. Veritabanı şifresini veya secret / service_role anahtarını sohbete ya da GitHub'a koyma.
 
 ## 2. Fiş veritabanını oluştur
 
-1. Supabase projesinde **SQL Editor → New query** aç.
-2. Depodaki `supabase/migrations/202610070001_receipts.sql` dosyasının tamamını yapıştırıp **Run** seç.
-3. Bu işlem `receipts` tablosunu, hesaba özel erişim kurallarını ve özel `receipts` fotoğraf alanını oluşturur. Eski yerel harcama verilerine dokunmaz.
+1. Supabase **SQL Editor → New query** aç.
+2. `supabase/migrations/202610070001_receipts.sql` dosyasının tamamını yapıştırıp **Run** seç.
+3. Hesaba özel `receipts` tablosu, özel fotoğraf alanı ve erişim kuralları oluşturulur.
 
-## 3. Uygulamayı projeye bağla
+Bu işlem mevcut yerel harcamaları değiştirmez. Önceki taslak sürümün SQL'ini zaten çalıştırdıysan aynı dosya tekrar uygulanabilir. O sürümün okuma kullanım tablosu/fonksiyonu kalabilir ancak yeni sürüm bunları kullanmaz.
 
-GitHub'daki `receipt-config.js` dosyasını şu iki değerle düzenle:
+## 3. Uygulamayı bağla
+
+GitHub'daki `receipt-config.js` dosyasına yalnızca bu iki herkese açık değeri yaz:
 
 ```js
 window.RECEIPT_CONFIG = {
@@ -29,70 +35,39 @@ window.RECEIPT_CONFIG = {
 };
 ```
 
-Bu iki değer tarayıcı bağlantısı içindir. Hesaba özel erişimi SQL'deki kurallar korur. Sunucu anahtarları bu dosyaya yazılmaz.
+Sunucu şifresi veya OpenAI anahtarı gerekmez. Edge Function veya ücretli okuma servisi kurulmaz. Eski `analyze-receipt` fonksiyonunu daha önce deploy ettiysen Supabase panelinden kaldırabilir, ona eklediğin OpenAI secret değerini silebilirsin; yeni sürüm onu çağırmaz.
 
 ## 4. Fiş hesabını aç
 
 1. Supabase **Authentication → URL Configuration** bölümünde Site URL ve izin verilen Redirect URL olarak `https://onurarol.github.io/harcama-takip/` ekle.
 2. Uygulamada **Fişler → Hesap Oluştur** ile kendi e-postanı ve en az 8 karakterlik şifreni gir.
-3. E-postandaki doğrulama bağlantısını aç. Ardından uygulamada **Giriş Yap** seç.
-4. Bu kişisel uygulama için hesabını oluşturduktan sonra Supabase **Authentication** ayarlarında **Allow new users to sign up** seçeneğini kapat. Böylece dışarıdan yeni hesaplar açılmaz. Mevcut hesabınla giriş yapmaya devam edersin.
+3. E-postandaki doğrulama bağlantısını aç; sonra uygulamada giriş yap.
+4. Kişisel hesabını oluşturunca Authentication ayarlarında **Allow new users to sign up** seçeneğini kapat. Mevcut hesabınla giriş yapmaya devam edersin.
 
-PIN cihazdaki ekran kilididir. Fiş hesabının şifresi ayrıdır. Yeni telefonda aynı e-posta hesabıyla giriş yapınca fişlerin gelir; eski elle girilmiş kayıtlar eski cihazda kalır.
+PIN cihazdaki ekran kilididir; fiş hesabının şifresi ayrıdır. Başka telefonda aynı hesapla fişlerine ulaşabilirsin. Eski elle girilmiş kayıtlar eski cihazda kalır.
 
-## 5. Otomatik okumayı etkinleştir
+## 5. Kullan ve kontrol et
 
-Supabase fotoğrafları saklar; fotoğraftan firma, tarih, toplam ve ürün çıkarma işlemini sunucuda çalışan OpenAI API bağlantısı yapar. Bunun için ayrıca bir OpenAI API anahtarı ve API kullanım bakiyesi gerekir; API kullanımı ücretlidir. Anahtarı yalnızca Supabase'in gizli değerler ekranına gir.
+- Fişler ekranında **Fotoğraf Çek** veya **Galeriden Seç** düğmesine dokun.
+- Önce orijinal fotoğraf hesabına yüklenir. Sonra tarayıcı ücretsiz Türkçe/İngilizce OCR aracını açıp görüntüyü cihazında okur.
+- İlk kullanımda okuma motoru ve dil dosyaları internetten indirilir; bu işlem biraz sürebilir. Fotoğraf okuma için bir yapay zekâ servisine yüklenmez.
+- Firma, tarih, ödenecek toplam, kategori ve ürünleri kontrol edip düzelt. Sonuç doğrulanamadığında alan boş bırakılır veya uyarı gösterilir. Silik/eğri fişlerde elle düzeltme gerekebilir.
+- **Kontrol Ettim, Harcamaya Ekle** ile kaydet. Onaylanana kadar harcama toplamına eklenmez.
+- **Fişi Büyüt** ile orijinal fotoğrafı açabilirsin. Farklı bir tarayıcıdan giriş yapıp fotoğrafın kayıtlı olduğunu kontrol ettikten sonra galerideki kopyayı silebilirsin.
 
-1. https://platform.openai.com/api-keys adresinden bir API anahtarı oluştur. API hesabında faturalandırmayı ve sana uygun bütçeyi ayarla.
-2. Supabase **Edge Functions → Secrets** bölümüne şu değerleri ekle:
+## Sınırlar ve veri davranışı
 
-| Ad | Değer |
-| --- | --- |
-| `OPENAI_API_KEY` | OpenAI API anahtarın |
-| `RECEIPT_OWNER_EMAIL` | Fiş hesabını oluşturduğun e-posta |
-| `RECEIPT_SUPABASE_PUBLISHABLE_KEY` | Aynı Supabase Publishable key |
-| `APP_ORIGIN` | `https://onurarol.github.io` |
-| `OPENAI_RECEIPT_MODEL` | İsteğe bağlı; varsayılan `gpt-4.1-mini` |
-
-3. **Edge Functions → Deploy a new function / Via Editor** ile `analyze-receipt` adında fonksiyon oluştur.
-4. `supabase/functions/analyze-receipt/index.ts` ve aynı klasördeki `schema.ts` dosyalarını ekle. `schema.ts`, `index.ts` ile aynı klasörde olmalı.
-5. Fonksiyon ayarlarında **Verify JWT with legacy secret** kontrolünü kapat. Kod kendi içinde `auth.getUser(token)` ile oturumu doğrular; anonim okumaya izin vermez. Yeni Supabase imzalama anahtarlarıyla bu yöntem çalışır.
-6. Fonksiyonu deploy et.
-
-CLI kullanılıyorsa alternatif komutlar:
-
-```sh
-supabase login
-supabase link --project-ref SENIN_PROJE_REFERANSIN
-supabase db push
-supabase functions deploy analyze-receipt --no-verify-jwt
-```
-
-Secrets değerlerini panelden ekleyebilirsin. OpenAI anahtarını komut satırı geçmişine yazma.
-
-## 6. Son kontrol
-
-- Mevcut harcamaların görünmeye devam ettiğini kontrol et.
-- Fişler ekranında küçük bir fiş fotoğrafı seç. **Fotoğraf buluta kaydedildi** mesajını bekle.
-- Okunan firma, tarih, toplam ve ürünleri kontrol et; gerekirse düzeltip kaydet.
-- Harcama kayıtlarında fiş bir kez görünmeli. **Fişi Gör / Düzenle** orijinal fotoğrafı açmalı.
-- Aynı fotoğrafı tekrar seçince aynı kayıt açılmalı; ikinci harcama eklenmemeli.
-- Başka bir tarayıcıda aynı fiş hesabına girip fotoğrafın ve kayıtların geldiğini doğrula. Bu kontrol geçmeden galerideki asıl kopyayı silme.
-- Otomatik okuma çalışmıyorsa fotoğraf kayıtlı kalır; yeniden okunabilir veya alanlar elle tamamlanabilir.
-
-## Kullanım ve sınırlar
-
-- JPEG, PNG, WebP; dosya başına en fazla 10 MB. HEIC doğrudan kabul edilmez.
-- Fiş fotoğrafları GitHub'a veya yerel `localStorage`'a yazılmaz; özel Supabase alanında saklanır. Görüntüleme bağlantıları 5 dakika geçerlidir.
-- Okuma sırasında fiş fotoğrafı OpenAI API'ye gönderilir. `store:false` ile Responses kayıt saklama kapatılır; bu ayar sağlayıcının tüm veri işleme/abuse monitoring politikalarını sıfırladığı anlamına gelmez.
-- Okuma sonucu kontrol bekleyen kayıt olur. Harcama toplamına yalnızca onaylanınca girer.
-- TL dışındaki fişlerde toplamın TL karşılığını kullanıcı kontrol ederek girer; otomatik kur hesabı yoktur.
-- Günlük kullanıcı başına 50 okuma denemesi sınırı vardır. Kesilen okuma 3 dakika sonra yeniden denenebilir.
-- Aynı dosya SHA-256 ile tanınır. Aynı fişi farklı açıdan çekmek veya kırpmak farklı dosya oluşturur; bunlar otomatik aynı fiş sayılmaz.
-- Fişten onaylanan harcamalar bulut kaydından gösterilir; yerel elle girişlere kopyalanmaz. Böylece yeniden yükleme/girişte toplam iki katına çıkmaz.
-- JSON/CSV yedeği mevcut yerel gelir ve harcamalar içindir; fiş fotoğrafları bu yedeğe dahil değildir.
+- JPEG, PNG, WebP; fotoğraf başına en fazla 10 MB. HEIC için JPEG kopyası gerekir.
+- Fotoğraflar ve fiş kayıtları Supabase'deki hesabında saklanır; GitHub'a veya tarayıcının localStorage alanına yazılmaz.
+- OCR için fotoğraf yalnızca geçici bellekte işlenir. Dil dosyalarının önbelleği fotoğraflardan ayrıdır. Okuma işlemi sonunda worker ve geçici görüntü serbest bırakılır.
+- Ücretsiz OCR yapay zekâ kadar esnek değildir: mağaza/kategori tahmini basit kurallarla yapılır; karmaşık ürün satırları ve indirimler eksik okunabilir. Fişi kontrol etmen gerekir.
+- Ödenecek toplam, toplam etiketiyle bulunur. KDV, ara toplam, verilen nakit ve para üstü toplam yerine kullanılmaz. Çelişen toplamlar bulunursa alan boş bırakılır.
+- Aynı dosya SHA-256 ile tanınır; ikinci harcama oluşturulmaz. Aynı fişin farklı açıdan çekilmiş fotoğrafı farklı dosya sayılır.
+- Okuma başarısız olsa da yüklenmiş fotoğraf saklanır; yeniden okunabilir veya alanlar elle tamamlanabilir.
+- TL dışındaki fişlerde tutarın TL karşılığını kullanıcı girmelidir; otomatik kur hesabı yoktur.
+- Yerel JSON/CSV yedeği elle girilmiş kayıtlara aittir; bulut fişlerini ve fotoğraflarını içermez.
 - Cihazdaki kayıtları silme düğmesi bulut fişlerini silmez. Fişler ayrı ayrı **Fişi Sil** ile fotoğraf ve bağlı harcamasıyla silinir.
-- Supabase/AI bağlantısı ve gerçek fiş okuması proje kurulumu sonrası doğrulanmalıdır. Yerel testler sunucu yanıtlarını simüle eder.
+- Tarayıcıda okuma için kullanım başına ücret ve günlük sunucu okuma kotası yoktur. İnternet/veri kullanımı ve Supabase Free kotaları geçerlidir.
+- Gerçek Supabase projesi bağlanınca yükleme, hesap girişi ve farklı cihazdan geri açma son kez doğrulanmalıdır.
 
-Resmi kaynaklar: [Supabase API anahtarları](https://supabase.com/docs/guides/getting-started/api-keys), [özel dosya erişimi](https://supabase.com/docs/guides/storage/security/access-control), [Edge Function oturum kontrolü](https://supabase.com/docs/guides/functions/auth), [OpenAI Structured Outputs](https://developers.openai.com/api/docs/guides/structured-outputs).
+Kaynaklar: [Supabase Free planı](https://supabase.com/pricing), [API anahtarları](https://supabase.com/docs/guides/getting-started/api-keys), [özel dosya erişimi](https://supabase.com/docs/guides/storage/security/access-control), [Tesseract.js](https://github.com/naptha/tesseract.js).
